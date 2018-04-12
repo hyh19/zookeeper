@@ -74,7 +74,7 @@ tar zxvf $ARCHIVE_SAVE_PATH
 mkdir -p $INSTALL_ROOT
 
 # 拷贝源码目录到安装根目录
-cp $SOURCE_DIR $INSTALL_DIR
+cp $SOURCE_DIR $INSTALL_ROOT
 
 # 创建符号链接
 if [ -L "$CURRENT_VERSION" ]; then
