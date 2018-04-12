@@ -58,7 +58,8 @@ function make_and_install() {
     # 进入源码目录
     cd $SOURCE_DIR
 
-    # 无需编译
+    # 无需编译，直接拷贝文件到安装目录。
+    cp ./* $INSTALL_DIR
 }
 
 # 配置二进制文件路径
