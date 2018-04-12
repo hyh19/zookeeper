@@ -45,10 +45,12 @@ CHECK_SYS_SCRIPT_SAVE_PATH="${WORKING_DIR}/${CHECK_SYS_SCRIPT_NAME}"
 
 # 使用 yum 安装依赖
 function install_dependencies_with_yum() {
+    # 无
 }
 
 # 使用 apt 安装依赖
 function install_dependencies_with_apt() {
+    # 无    
 }
 
 # 编译和安装源码
