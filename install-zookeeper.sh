@@ -38,32 +38,6 @@ CURRENT_VERSION="${INSTALL_ROOT}/current"
 # 二进制文件路径的配置文件
 SOFTWARE_PROFILE="/etc/profile.d/${SOFTWARE_NAME}.sh"
 
-# 判断 Linux 发行版本的脚本
-CHECK_SYS_SCRIPT_NAME="check_sys.sh"
-CHECK_SYS_SCRIPT_DOWNLOAD_URL="https://github.com/mrhuangyuhui/shell/raw/snippets/${CHECK_SYS_SCRIPT_NAME}"
-CHECK_SYS_SCRIPT_SAVE_PATH="${WORKING_DIR}/${CHECK_SYS_SCRIPT_NAME}"
-
-# 使用 yum 安装依赖
-function install_dependencies_with_yum() {
-    # 无
-}
-
-# 使用 apt 安装依赖
-function install_dependencies_with_apt() {
-    # 无    
-}
-
-# 编译和安装源码
-function make_and_install() {
-    # 创建安装目录
-    mkdir -p $INSTALL_DIR
-    # 进入源码目录
-    cd $SOURCE_DIR
-
-    # 无需编译，直接拷贝文件到安装目录。
-    cp ./* $INSTALL_DIR
-}
-
 # 配置二进制文件路径
 function config_binary_path() {
     echo "export PATH=\${PATH}:${CURRENT_VERSION}/bin" > $SOFTWARE_PROFILE
@@ -71,27 +45,6 @@ function config_binary_path() {
 
 # 进入工作目录
 cd $WORKING_DIR
-
-# 下载判断发行版本的脚本
-rm -f $CHECK_SYS_SCRIPT_SAVE_PATH
-wget -O $CHECK_SYS_SCRIPT_SAVE_PATH $CHECK_SYS_SCRIPT_DOWNLOAD_URL
-
-if [ -e "$CHECK_SYS_SCRIPT_SAVE_PATH" ]; then
-    . $CHECK_SYS_SCRIPT_SAVE_PATH
-else
-    echo "[ERROR] Download ${CHECK_SYS_SCRIPT_NAME} failed."
-    exit 1
-fi
-
-# 安装依赖
-if check_sys "packageManager" "yum"; then
-    install_dependencies_with_yum
-elif check_sys "packageManager" "apt"; then
-    install_dependencies_with_apt
-else
-    echo "[ERROR] Not supported distro."
-    exit 1
-fi
 
 # 下载源码包
 if [ ! -e "$ARCHIVE_SAVE_PATH" ]; then
@@ -117,8 +70,11 @@ fi
 # 解压源码包
 tar zxvf $ARCHIVE_SAVE_PATH
 
-# 开始编译和安装
-make_and_install
+# 创建安装根目录
+mkdir -p $INSTALL_ROOT
+
+# 拷贝源码目录到安装根目录
+cd $SOURCE_DIR $INSTALL_DIR
 
 # 创建符号链接
 if [ -L "$CURRENT_VERSION" ]; then
