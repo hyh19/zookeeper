@@ -51,7 +51,7 @@ public class ZooKeeperGetChildrenAPISyncUsage {
         List<String> childrenList = zooKeeper.getChildren(path, true);
         System.out.println("第一次获取子节点：" + childrenList);
 
-        // 阻塞，不要让程序结束，因为要监听子节点的变化。
+        // 阻塞，不要让程序结束，因为要监听事件通知。
         Thread.sleep(Integer.MAX_VALUE);
     }
 }

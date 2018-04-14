@@ -3,7 +3,6 @@ package chapter05.$5_3_4;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -47,16 +46,12 @@ public class ZooKeeperGetChildrenAPIAsyncUsage {
         * create /zk-test/c2 Hello
         * 观察子节点变化通知
         * */
-        // 异步 API
         zooKeeper.getChildren("/zk-test", true,
-                ((rc, path, ctx, children, stat) -> {
-                    System.out.println("Get Children znode result: [response code: " + rc + ", param path: " + path
-                            + ", ctx: " + ctx + ", children list: " + children + ", stat: " + stat);
-
-                }),
+                ((rc, path, ctx, children, stat) -> System.out.println("Get Children znode result: [response code: " + rc + ", param path: " + path
+                        + ", ctx: " + ctx + ", children list: " + children + ", stat: " + stat)),
                 null);
 
-        // 阻塞，不要让程序结束，因为要监听子节点的变化。
+        // 阻塞，不要让程序结束，因为要监听事件通知。
         Thread.sleep(Integer.MAX_VALUE);
     }
 }

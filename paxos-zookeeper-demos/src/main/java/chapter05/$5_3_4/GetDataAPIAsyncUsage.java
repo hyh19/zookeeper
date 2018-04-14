@@ -1,21 +1,30 @@
 package chapter05.$5_3_4;
 
+import org.apache.zookeeper.AsyncCallback;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.data.Stat;
 
 import java.util.concurrent.CountDownLatch;
 
 /**
- * 5.3.4 清单 5-8 使用同步 API 获取节点数据内容
+ * 5.3.4 清单 5-9 使用异步 API 获取节点数据内容
  */
-public class GetDataAPISyncUsage {
+public class GetDataAPIAsyncUsage {
 
     private static CountDownLatch connectedSemaphore = new CountDownLatch(1);
     private static ZooKeeper zooKeeper = null;
-    private static Stat stat = new Stat();
 
     public static void main(String[] args) throws Exception {
+
+        AsyncCallback.DataCallback dataCallback = (rc, path, ctx, data, stat) -> {
+            System.out.println("data: " + rc + ", " + path + ", " + new String(data));
+            System.out.println("stat: " + stat.getCzxid() + ", " +
+                    stat.getMzxid() + ", " +
+                    stat.getVersion());
+            System.out.println("--------");
+        };
+
+        String path = "/zk-test";
 
         zooKeeper = new ZooKeeper("localhost:2181", 5000,
                 event -> {
@@ -31,11 +40,7 @@ public class GetDataAPISyncUsage {
                         } else if (event.getType() == Watcher.Event.EventType.NodeDataChanged) {
                             try {
                                 // 重新获取节点数据
-                                byte[] data = zooKeeper.getData(event.getPath(), true, stat);
-                                System.out.println("重新获取节点数据：" + new String(data));
-                                System.out.println("状态信息：" + stat.getCzxid() + " " +
-                                        stat.getMzxid() + " " +
-                                        stat.getVersion());
+                                zooKeeper.getData(path, true, dataCallback, null);
                             } catch (Exception e) {
                             }
                         }
@@ -51,9 +56,7 @@ public class GetDataAPISyncUsage {
         * set /zk-test World
         * 观察节点数据变化通知
         * */
-        String path = "/zk-test";
-        byte[] data = zooKeeper.getData(path, true, stat);
-        System.out.println("第一次获取节点数据：" + new String(data));
+        zooKeeper.getData(path, true, dataCallback, null);
 
         // 阻塞，不要让程序结束，因为要监听事件通知。
         Thread.sleep(Integer.MAX_VALUE);
