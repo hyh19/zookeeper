@@ -86,6 +86,16 @@ ln -s $INSTALL_DIR $CURRENT_VERSION
 # 配置二进制文件路径
 config_binary_path
 
+# 创建数据文件夹
+mkdir -p /var/lib/zookeeper
+
+# 初始化配置文件
+cat > /usr/local/zookeeper/current/conf/zoo.cfg << EOF
+tickTime=2000
+dataDir=/var/lib/zookeeper
+clientPort=2181
+EOF
+
 echo "################################################################################"
 echo "# Open a new terminal or enter: source ${SOFTWARE_PROFILE}"
 echo "################################################################################"
