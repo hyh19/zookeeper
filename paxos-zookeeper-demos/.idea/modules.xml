@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/hellozookeeper.iml" filepath="$PROJECT_DIR$/hellozookeeper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/paxos-zookeeper-demos.iml" filepath="$PROJECT_DIR$/paxos-zookeeper-demos.iml" />
     </modules>
   </component>
 </project>
