@@ -1,30 +1,31 @@
 package chapter05.$5_3_5;
 
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
 import java.util.concurrent.CountDownLatch;
+
+import static org.apache.zookeeper.Watcher.Event.EventType.None;
+import static org.apache.zookeeper.Watcher.Event.KeeperState.SyncConnected;
 
 /**
  * 5.3.5 清单 5-10 使用同步 API 更新节点数据内容
  */
 public class SetDataAPISyncUsage {
 
-    private static CountDownLatch connectedSemaphore = new CountDownLatch(1);
-    private static ZooKeeper zooKeeper = null;
+    private static final CountDownLatch connectedSemaphore = new CountDownLatch(1);
 
     public static void main(String[] args) throws Exception {
 
-        zooKeeper = new ZooKeeper("localhost:2181", 5000,
+        ZooKeeper zooKeeper = new ZooKeeper("localhost:2181", 5000,
                 event -> {
 
                     System.out.println(event);
 
-                    if (Watcher.Event.KeeperState.SyncConnected == event.getState()) {
+                    if (SyncConnected == event.getState()) {
                         // 成功连接服务器
-                        if (Watcher.Event.EventType.None == event.getType() && null == event.getPath()) {
+                        if (None == event.getType() && null == event.getPath()) {
                             // 解除阻塞
                             connectedSemaphore.countDown();
                         }

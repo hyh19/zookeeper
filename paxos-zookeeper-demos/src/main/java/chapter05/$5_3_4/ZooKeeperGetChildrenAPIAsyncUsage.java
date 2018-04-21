@@ -1,16 +1,19 @@
 package chapter05.$5_3_4;
 
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.util.concurrent.CountDownLatch;
+
+import static org.apache.zookeeper.Watcher.Event.EventType.NodeChildrenChanged;
+import static org.apache.zookeeper.Watcher.Event.EventType.None;
+import static org.apache.zookeeper.Watcher.Event.KeeperState.SyncConnected;
 
 /**
  * 5.3.4 清单 5-7 使用异步 API 获取子节点列表
  */
 public class ZooKeeperGetChildrenAPIAsyncUsage {
 
-    private static CountDownLatch connectedSemaphore = new CountDownLatch(1);
+    private static final CountDownLatch connectedSemaphore = new CountDownLatch(1);
     private static ZooKeeper zooKeeper = null;
 
     public static void main(String[] args) throws Exception {
@@ -20,17 +23,17 @@ public class ZooKeeperGetChildrenAPIAsyncUsage {
 
                     System.out.println(event);
 
-                    if (Watcher.Event.KeeperState.SyncConnected == event.getState()) {
+                    if (SyncConnected == event.getState()) {
                         // 成功连接服务器
-                        if (Watcher.Event.EventType.None == event.getType() && null == event.getPath()) {
+                        if (None == event.getType() && null == event.getPath()) {
                             // 解除阻塞
                             connectedSemaphore.countDown();
                             // 子节点变更
-                        } else if (event.getType() == Watcher.Event.EventType.NodeChildrenChanged) {
+                        } else if (NodeChildrenChanged == event.getType()) {
                             try {
                                 // 重新获取子节点
                                 System.out.println("重新获取子节点列表 " + zooKeeper.getChildren(event.getPath(), true));
-                            } catch (Exception e) {
+                            } catch (Exception ignored) {
                             }
                         }
                     }

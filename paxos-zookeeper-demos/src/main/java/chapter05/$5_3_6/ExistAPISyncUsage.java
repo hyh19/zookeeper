@@ -1,17 +1,19 @@
 package chapter05.$5_3_6;
 
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
 import java.util.concurrent.CountDownLatch;
+
+import static org.apache.zookeeper.Watcher.Event.EventType.*;
+import static org.apache.zookeeper.Watcher.Event.KeeperState.SyncConnected;
 
 /**
  * 5.3.6 清单 5-12 使用同步 API 检测节点是否存在
  */
 public class ExistAPISyncUsage {
 
-    private static CountDownLatch connectedSemaphore = new CountDownLatch(1);
+    private static final CountDownLatch connectedSemaphore = new CountDownLatch(1);
     private static ZooKeeper zooKeeper = null;
 
     public static void main(String[] args) throws Exception {
@@ -22,26 +24,26 @@ public class ExistAPISyncUsage {
                     System.out.println(event);
 
                     try {
-                        if (Watcher.Event.KeeperState.SyncConnected == event.getState()) {
+                        if (SyncConnected == event.getState()) {
                             // 成功连接服务器
-                            if (Watcher.Event.EventType.None == event.getType() && null == event.getPath()) {
+                            if (None == event.getType() && null == event.getPath()) {
                                 // 解除阻塞
                                 connectedSemaphore.countDown();
                                 // 节点创建
-                            } else if (Watcher.Event.EventType.NodeCreated == event.getType()) {
+                            } else if (NodeCreated == event.getType()) {
                                 System.out.println("Node " + event.getPath() + " Created");
                                 zooKeeper.exists(event.getPath(), true);
                                 // 节点删除
-                            } else if (Watcher.Event.EventType.NodeDeleted == event.getType()) {
+                            } else if (NodeDeleted == event.getType()) {
                                 System.out.println("Node " + event.getPath() + " Deleted");
                                 zooKeeper.exists(event.getPath(), true);
                                 // 节点更新
-                            } else if (Watcher.Event.EventType.NodeDataChanged == event.getType()) {
+                            } else if (NodeDataChanged == event.getType()) {
                                 System.out.println("Node " + event.getPath() + " DataChanged");
                                 zooKeeper.exists(event.getPath(), true);
                             }
                         }
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
 
                     }
                 });
@@ -49,12 +51,12 @@ public class ExistAPISyncUsage {
         // 阻塞，成功连接服务器后再解除。
         connectedSemaphore.await();
 
-        /**
-         * 开始时，服务器上是没有测试节点的 ls /fruit Node does not exist: /fruit
-         * 观察以下事件通知
-         * 创建节点 create /fruit apple
-         * 更新节点 set /fruit banana
-         * 删除节点 delete /fruit
+        /*
+          开始时，服务器上是没有测试节点的 ls /fruit Node does not exist: /fruit
+          观察以下事件通知
+          创建节点 create /fruit apple
+          更新节点 set /fruit banana
+          删除节点 delete /fruit
          */
         String path = "/fruit";
         Stat stat = zooKeeper.exists(path, true);

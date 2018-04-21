@@ -1,17 +1,19 @@
 package chapter05.$5_3_7;
 
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.util.concurrent.CountDownLatch;
+
+import static org.apache.zookeeper.CreateMode.EPHEMERAL;
+import static org.apache.zookeeper.CreateMode.PERSISTENT;
+import static org.apache.zookeeper.ZooDefs.Ids.CREATOR_ALL_ACL;
 
 /**
  * 5.3.7 清单 5-16 删除节点接口的权限控制
  */
 public class AuthSampleDelete {
 
-    private static CountDownLatch connectedSemaphore = new CountDownLatch(1);
+    private static final CountDownLatch connectedSemaphore = new CountDownLatch(1);
     private final static String connectString = "localhost:2181";
     private final static String FRUIT = "/fruit";
     private final static String FRUIT_APPLE = "/fruit/apple";
@@ -25,9 +27,9 @@ public class AuthSampleDelete {
         connectedSemaphore.await();
         zookeeper1.addAuthInfo("digest", "tom:123456".getBytes());
         // 创建父节点
-        zookeeper1.create(FRUIT, "fruit".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
+        zookeeper1.create(FRUIT, "fruit".getBytes(), CREATOR_ALL_ACL, PERSISTENT);
         // 创建子节点
-        zookeeper1.create(FRUIT_APPLE, "apple".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.EPHEMERAL);
+        zookeeper1.create(FRUIT_APPLE, "apple".getBytes(), CREATOR_ALL_ACL, EPHEMERAL);
 
         // 未添加认证信息，删除子节点失败。
         ZooKeeper zookeeper2 = new ZooKeeper(connectString, 5000, event -> {

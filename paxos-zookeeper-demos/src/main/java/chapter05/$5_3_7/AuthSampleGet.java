@@ -1,17 +1,18 @@
 package chapter05.$5_3_7;
 
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.util.concurrent.CountDownLatch;
+
+import static org.apache.zookeeper.CreateMode.EPHEMERAL;
+import static org.apache.zookeeper.ZooDefs.Ids.CREATOR_ALL_ACL;
 
 /**
  * 5.3.7 访问含权限信息的数据节点
  */
 public class AuthSampleGet {
 
-    private static CountDownLatch connectedSemaphore = new CountDownLatch(1);
+    private static final CountDownLatch connectedSemaphore = new CountDownLatch(1);
     private final static String PATH = "/fruit";
     private final static String connectString = "localhost:2181";
 
@@ -29,7 +30,7 @@ public class AuthSampleGet {
         // 添加认证信息
         zookeeper1.addAuthInfo("digest", "tom:123456".getBytes());
         // 创建一个带 ACL 的临时节点
-        zookeeper1.create(PATH, "apple".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.EPHEMERAL);
+        zookeeper1.create(PATH, "apple".getBytes(), CREATOR_ALL_ACL, EPHEMERAL);
 
         // 创建第二个会话，不添加认证信息。
         ZooKeeper zookeeper2 = new ZooKeeper(connectString, 5000,

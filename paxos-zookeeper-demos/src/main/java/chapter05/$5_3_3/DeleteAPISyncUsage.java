@@ -1,22 +1,23 @@
 package chapter05.$5_3_3;
 
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.util.concurrent.CountDownLatch;
+
+import static org.apache.zookeeper.Watcher.Event.KeeperState.SyncConnected;
 
 /**
  * 5.3.3 使用同步方式删除节点
  */
 public class DeleteAPISyncUsage {
 
-    private static CountDownLatch connectedSemaphore = new CountDownLatch(1);
+    private static final CountDownLatch connectedSemaphore = new CountDownLatch(1);
 
     public static void main(String[] args) throws Exception {
 
         ZooKeeper zookeeper = new ZooKeeper("localhost:2181",
                 5000, event -> {
-            if (Watcher.Event.KeeperState.SyncConnected == event.getState()) {
+            if (SyncConnected == event.getState()) {
                 connectedSemaphore.countDown();
             }
         });
