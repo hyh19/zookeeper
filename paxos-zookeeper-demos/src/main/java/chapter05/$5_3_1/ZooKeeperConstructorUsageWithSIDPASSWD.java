@@ -15,28 +15,38 @@ public class ZooKeeperConstructorUsageWithSIDPASSWD {
     public static void main(String[] args) throws Exception {
 
         String connectString = "localhost:2181";
-        Watcher watcher = event -> {
-            System.out.println("Receive watched event：" + event);
-            if (Watcher.Event.KeeperState.SyncConnected == event.getState()) {
-                connectedSemaphore.countDown();
-            }
-        };
 
-        // 第一次连接会话
-        ZooKeeper zooKeeper = new ZooKeeper(connectString, 5000, watcher);
+        // 会话一
+        ZooKeeper zooKeeper = new ZooKeeper(connectString, 5000,
+                event -> {
+                    System.out.println("会话一 " + event);
+                    if (Watcher.Event.KeeperState.SyncConnected == event.getState()) {
+                        connectedSemaphore.countDown();
+                    }
+                });
 
         connectedSemaphore.await();
 
         long sessionId = zooKeeper.getSessionId();
         byte[] passwd = zooKeeper.getSessionPasswd();
 
-        // 使用错误的会话 ID 和 密码，服务器将返回连接超时事件。
+        // 会话二，使用错误的会话 ID 和 密码，服务器将返回连接超时事件。
         zooKeeper = new ZooKeeper(connectString, 5000,
-                watcher, 1L, "apple".getBytes());
+                event -> {
+                    System.out.println("会话二 " + event);
+                    if (Watcher.Event.KeeperState.SyncConnected == event.getState()) {
+                        connectedSemaphore.countDown();
+                    }
+                }, 1L, "apple".getBytes());
 
-        // 使用正确的会话 ID 和 密码，服务器将返回连接成功事件。
+        // 会话三，使用正确的会话 ID 和 密码，服务器将返回连接成功事件。
         zooKeeper = new ZooKeeper(connectString, 5000,
-                watcher, sessionId, passwd);
+                event -> {
+                    System.out.println("会话三 " + event);
+                    if (Watcher.Event.KeeperState.SyncConnected == event.getState()) {
+                        connectedSemaphore.countDown();
+                    }
+                }, sessionId, passwd);
 
         Thread.sleep(Integer.MAX_VALUE);
     }

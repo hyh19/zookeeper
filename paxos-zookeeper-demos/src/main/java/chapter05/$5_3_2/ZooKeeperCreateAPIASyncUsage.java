@@ -7,47 +7,45 @@ import java.util.concurrent.CountDownLatch;
 /**
  * 5.3.2 清单 5-5 使用异步 API 创建一个节点
  */
-public class ZooKeeperCreateAPIASyncUsage implements Watcher {
+public class ZooKeeperCreateAPIAsyncUsage {
 
     private static CountDownLatch connectedSemaphore = new CountDownLatch(1);
 
     public static void main(String[] args) throws Exception {
 
-        ZooKeeper zookeeper = new ZooKeeper("domain1.book.zookeeper:2181",
-                5000, new ZooKeeperCreateAPIASyncUsage());
+        ZooKeeper zookeeper = new ZooKeeper("localhost:2181",
+                5000, event -> {
+            if (Watcher.Event.KeeperState.SyncConnected == event.getState()) {
+                connectedSemaphore.countDown();
+            }
+        });
 
         connectedSemaphore.await();
 
-        zookeeper.create("/zk-test-ephemeral-", "ephemeral znode".getBytes(),
+        AsyncCallback.StringCallback callback = (rc, path, ctx, name) -> {
+            if (rc == KeeperException.Code.OK.intValue()) {
+                // 顺序节点的 name 只有创建成功后才确定下来
+                System.out.println("节点创建成功 [" + rc + ", " + path + ", "
+                        + ctx + ", " + name);
+            } else if (rc == KeeperException.Code.NODEEXISTS.intValue()) {
+                System.out.println("节点已经存在");
+            }
+        };
+
+        zookeeper.create("/ephemeral", "cat".getBytes(),
                 ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL,
-                new IStringCallback(), "I am context.");
+                callback, "I am context.");
 
         // 节点已经存在，将返回一个错误码。
-        zookeeper.create("/zk-test-ephemeral-", "ephemeral znode".getBytes(),
+        zookeeper.create("/ephemeral", "dog".getBytes(),
                 ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL,
-                new IStringCallback(), "I am context.");
+                callback, "I am context.");
 
-        zookeeper.create("/zk-test-ephemeral-", "ephemeral sequential znode".getBytes(),
+        // 临时顺序节点
+        zookeeper.create("/ephemeral-sequential-", "pig".getBytes(),
                 ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL,
-                new IStringCallback(), "I am context.");
+                callback, "I am context.");
 
         Thread.sleep(Integer.MAX_VALUE);
-    }
-
-    public void process(WatchedEvent event) {
-        if (Event.KeeperState.SyncConnected == event.getState()) {
-            connectedSemaphore.countDown();
-        }
-    }
-}
-
-class IStringCallback implements AsyncCallback.StringCallback {
-    public void processResult(int rc, String path, Object ctx, String name) {
-        if (rc == KeeperException.Code.OK.intValue()) {
-            System.out.println("Create path result: [" + rc + ", " + path + ", "
-                    + ctx + ", real path name: " + name);
-        } else if (rc == KeeperException.Code.NODEEXISTS.intValue()) {
-            System.out.println("节点已经存在");
-        }
     }
 }
