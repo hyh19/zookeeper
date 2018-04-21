@@ -30,12 +30,10 @@ public class GetDataAPISyncUsage {
                             // 节点数据变更
                         } else if (event.getType() == Watcher.Event.EventType.NodeDataChanged) {
                             try {
-                                // 重新获取节点数据
+                                // 重新读取节点数据
                                 byte[] data = zooKeeper.getData(event.getPath(), true, stat);
-                                System.out.println("重新获取节点数据：" + new String(data));
-                                System.out.println("状态信息：" + stat.getCzxid() + " " +
-                                        stat.getMzxid() + " " +
-                                        stat.getVersion());
+                                System.out.println("重新读取节点数据 " + new String(data));
+                                System.out.println("重新读取节点状态信息 " + stat);
                             } catch (Exception e) {
                             }
                         }
@@ -46,14 +44,16 @@ public class GetDataAPISyncUsage {
         connectedSemaphore.await();
 
         /*
-        * 在服务器创建测试节点 create /zk-test Hello
-        * 程序运行中修改节点数据
-        * set /zk-test World
-        * 观察节点数据变化通知
+        * 创建测试节点 create /animal cat
+        * 程序运行过程中修改节点数据
+        * set /animal cat
+        * set /animal dog
+        * 观察子节点变更通知
         * */
-        String path = "/zk-test";
+        String path = "/animal";
         byte[] data = zooKeeper.getData(path, true, stat);
-        System.out.println("第一次获取节点数据：" + new String(data));
+        System.out.println("第一次读取节点数据 " + new String(data));
+        System.out.println("第一次读取节点状态信息 " + stat);
 
         // 阻塞，不要让程序结束，因为要监听事件通知。
         Thread.sleep(Integer.MAX_VALUE);

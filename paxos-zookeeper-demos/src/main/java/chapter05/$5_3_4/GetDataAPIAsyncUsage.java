@@ -16,15 +16,13 @@ public class GetDataAPIAsyncUsage {
 
     public static void main(String[] args) throws Exception {
 
-        AsyncCallback.DataCallback dataCallback = (rc, path, ctx, data, stat) -> {
+        AsyncCallback.DataCallback callback = (rc, path, ctx, data, stat) -> {
+            System.out.println(ctx);
             System.out.println("data: " + rc + ", " + path + ", " + new String(data));
-            System.out.println("stat: " + stat.getCzxid() + ", " +
-                    stat.getMzxid() + ", " +
-                    stat.getVersion());
-            System.out.println("--------");
+            System.out.println("stat: " + stat);
         };
 
-        String path = "/zk-test";
+        String path = "/animal";
 
         zooKeeper = new ZooKeeper("localhost:2181", 5000,
                 event -> {
@@ -39,8 +37,8 @@ public class GetDataAPIAsyncUsage {
                             // 节点数据变更
                         } else if (event.getType() == Watcher.Event.EventType.NodeDataChanged) {
                             try {
-                                // 重新获取节点数据
-                                zooKeeper.getData(path, true, dataCallback, null);
+                                // 重新读取节点数据
+                                zooKeeper.getData(path, true, callback, "重新读取节点数据");
                             } catch (Exception e) {
                             }
                         }
@@ -51,12 +49,13 @@ public class GetDataAPIAsyncUsage {
         connectedSemaphore.await();
 
         /*
-        * 在服务器创建测试节点 create /zk-test Hello
-        * 程序运行中修改节点数据
-        * set /zk-test World
-        * 观察节点数据变化通知
+        * 创建测试节点 create /animal cat
+        * 程序运行过程中修改节点数据
+        * set /animal cat
+        * set /animal dog
+        * 观察子节点变更通知
         * */
-        zooKeeper.getData(path, true, dataCallback, null);
+        zooKeeper.getData(path, true, callback, "第一次读取节点数据");
 
         // 阻塞，不要让程序结束，因为要监听事件通知。
         Thread.sleep(Integer.MAX_VALUE);
