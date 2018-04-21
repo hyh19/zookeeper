@@ -2,14 +2,13 @@ package chapter05.$5_3_6;
 
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.data.Stat;
 
 import java.util.concurrent.CountDownLatch;
 
 /**
- * 5.3.6 清单 5-12 使用同步 API 检测节点是否存在
+ * 5.3.6 使用异步 API 检测节点是否存在
  */
-public class ExistAPISyncUsage {
+public class ExistAPIAsyncUsage {
 
     private static CountDownLatch connectedSemaphore = new CountDownLatch(1);
     private static ZooKeeper zooKeeper = null;
@@ -30,6 +29,7 @@ public class ExistAPISyncUsage {
                                 // 节点创建
                             } else if (Watcher.Event.EventType.NodeCreated == event.getType()) {
                                 System.out.println("Node " + event.getPath() + " Created");
+                                // 需要重复监听
                                 zooKeeper.exists(event.getPath(), true);
                                 // 节点删除
                             } else if (Watcher.Event.EventType.NodeDeleted == event.getType()) {
@@ -56,9 +56,9 @@ public class ExistAPISyncUsage {
          * 更新节点 set /fruit banana
          * 删除节点 delete /fruit
          */
-        String path = "/fruit";
-        Stat stat = zooKeeper.exists(path, true);
-        System.out.println(stat);
+        zooKeeper.exists("/fruit", true, (rc, path, ctx, stat) -> {
+            System.out.println("rc: " + rc + ", path: " + path + ", stat: " + stat);
+        }, null);
 
         // 阻塞，不要让程序结束，因为要监听事件通知。
         Thread.sleep(Integer.MAX_VALUE);
