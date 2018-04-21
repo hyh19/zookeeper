@@ -1,6 +1,6 @@
 package chapter05.$5_3_3;
 
-import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.util.concurrent.CountDownLatch;
@@ -16,7 +16,7 @@ public class DeleteAPIAsyncUsage {
 
         ZooKeeper zookeeper = new ZooKeeper("localhost:2181",
                 5000, event -> {
-            if (Watcher.Event.KeeperState.SyncConnected == event.getState()) {
+            if (KeeperState.SyncConnected == event.getState()) {
                 connectedSemaphore.countDown();
             }
         });

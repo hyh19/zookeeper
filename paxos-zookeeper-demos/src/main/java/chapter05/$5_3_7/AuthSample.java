@@ -9,18 +9,19 @@ import org.apache.zookeeper.ZooKeeper;
  */
 public class AuthSample {
 
-    final static String PATH = "/test1";
+    private final static String PATH = "/fruit";
 
     public static void main(String[] args) throws Exception {
 
         ZooKeeper zookeeper = new ZooKeeper("localhost:2181", 5000,
-                event -> System.out.println(event));
+                System.out::println);
 
         // 添加认证信息，ID 是 tom，密码是 123456。
         zookeeper.addAuthInfo("digest", "tom:123456".getBytes());
 
-        // 创建临时节点并设置 ACL 为 CREATOR_ALL_ACL（表示创建者 tom 有增删改查和管理节点的全部权限）。
-        zookeeper.create(PATH, "test1".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.EPHEMERAL);
+        // 在 Java API 上添加了认证信息后，后续对节点的 ACL 操作会使用这些认证信息。
+        // 创建临时节点并设置 ACL 为 CREATOR_ALL_ACL（表示创建者 tom 有全部权限）。
+        zookeeper.create(PATH, "apple".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.EPHEMERAL);
 
         Thread.sleep(Integer.MAX_VALUE);
     }

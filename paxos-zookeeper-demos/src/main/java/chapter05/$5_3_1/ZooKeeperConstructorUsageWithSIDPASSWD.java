@@ -1,16 +1,17 @@
 package chapter05.$5_3_1;
 
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.util.concurrent.CountDownLatch;
+
+import static org.apache.zookeeper.Watcher.Event.KeeperState.SyncConnected;
 
 /**
  * 5.3.1 清单 5-3 复用 sessionId 和 sessionPasswd 来创建一个 ZooKeeper 对象实例
  */
 public class ZooKeeperConstructorUsageWithSIDPASSWD {
 
-    private static CountDownLatch connectedSemaphore = new CountDownLatch(1);
+    private static final CountDownLatch connectedSemaphore = new CountDownLatch(1);
 
     public static void main(String[] args) throws Exception {
 
@@ -20,7 +21,7 @@ public class ZooKeeperConstructorUsageWithSIDPASSWD {
         ZooKeeper zooKeeper = new ZooKeeper(connectString, 5000,
                 event -> {
                     System.out.println("会话一 " + event);
-                    if (Watcher.Event.KeeperState.SyncConnected == event.getState()) {
+                    if (SyncConnected == event.getState()) {
                         connectedSemaphore.countDown();
                     }
                 });
@@ -34,7 +35,7 @@ public class ZooKeeperConstructorUsageWithSIDPASSWD {
         zooKeeper = new ZooKeeper(connectString, 5000,
                 event -> {
                     System.out.println("会话二 " + event);
-                    if (Watcher.Event.KeeperState.SyncConnected == event.getState()) {
+                    if (SyncConnected == event.getState()) {
                         connectedSemaphore.countDown();
                     }
                 }, 1L, "apple".getBytes());
@@ -43,7 +44,7 @@ public class ZooKeeperConstructorUsageWithSIDPASSWD {
         zooKeeper = new ZooKeeper(connectString, 5000,
                 event -> {
                     System.out.println("会话三 " + event);
-                    if (Watcher.Event.KeeperState.SyncConnected == event.getState()) {
+                    if (SyncConnected == event.getState()) {
                         connectedSemaphore.countDown();
                     }
                 }, sessionId, passwd);

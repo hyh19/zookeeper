@@ -4,36 +4,61 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 
+import java.util.concurrent.CountDownLatch;
+
 /**
  * 5.3.7 清单 5-16 删除节点接口的权限控制
  */
 public class AuthSampleDelete {
 
-    final static String FRUIT = "/fruit";
-    final static String FRUIT_APPLE = "/fruit/apple";
+    private static CountDownLatch connectedSemaphore = new CountDownLatch(1);
+    private final static String connectString = "localhost:2181";
+    private final static String FRUIT = "/fruit";
+    private final static String FRUIT_APPLE = "/fruit/apple";
 
     public static void main(String[] args) throws Exception {
 
-        ZooKeeper zookeeper1 = new ZooKeeper("localhost:2181", 5000, null);
+        ZooKeeper zookeeper1 = new ZooKeeper(connectString, 5000, event -> {
+            System.out.println("zookeeper1: " + event);
+            connectedSemaphore.countDown();
+        });
+        connectedSemaphore.await();
         zookeeper1.addAuthInfo("digest", "tom:123456".getBytes());
+        // 创建父节点
         zookeeper1.create(FRUIT, "fruit".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
+        // 创建子节点
         zookeeper1.create(FRUIT_APPLE, "apple".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.EPHEMERAL);
 
+        // 未添加认证信息，删除子节点失败。
+        ZooKeeper zookeeper2 = new ZooKeeper(connectString, 5000, event -> {
+            System.out.println("zookeeper2: " + event);
+            connectedSemaphore.countDown();
+        });
+        connectedSemaphore.await();
         try {
-            ZooKeeper zookeeper2 = new ZooKeeper("localhost:2181", 5000, null);
             zookeeper2.delete(FRUIT_APPLE, -1);
         } catch (Exception e) {
-            System.out.println("删除节点失败（未添加认证信息）" + e.getMessage());
+            System.out.println("删除【子】节点失败（未添加认证信息）" + e);
         }
 
-        ZooKeeper zookeeper3 = new ZooKeeper("localhost:2181", 5000, null);
+        // 添加正确的认证信息，删除子节点成功。
+        ZooKeeper zookeeper3 = new ZooKeeper(connectString, 5000, event -> {
+            System.out.println("zookeeper3: " + event);
+            connectedSemaphore.countDown();
+        });
+        connectedSemaphore.await();
         zookeeper3.addAuthInfo("digest", "tom:123456".getBytes());
         zookeeper3.delete(FRUIT_APPLE, -1);
-        System.out.println("成功删除节点（添加正确的认证信息）" + FRUIT_APPLE);
+        System.out.println("成功删除【子】节点（添加正确的认证信息）" + FRUIT_APPLE);
 
-        ZooKeeper zookeeper4 = new ZooKeeper("localhost:2181", 5000, null);
+        // 删除父节点不需要认证
+        ZooKeeper zookeeper4 = new ZooKeeper(connectString, 5000, event -> {
+            System.out.println("zookeeper4: " + event);
+            connectedSemaphore.countDown();
+        });
+        connectedSemaphore.await();
         zookeeper4.delete(FRUIT, -1);
-        System.out.println("成功删除节点（未添加认证信息）" + FRUIT);
+        System.out.println("成功删除【父】节点（未添加认证信息）" + FRUIT);
 
         Thread.sleep(Integer.MAX_VALUE);
     }
