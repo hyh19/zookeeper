@@ -3,7 +3,6 @@ package chapter05.$5_3_5;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.data.Stat;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -34,14 +33,13 @@ public class SetDataAPIAsyncUsage {
         // 阻塞，成功连接服务器后再解除。
         connectedSemaphore.await();
 
-        // 在服务器创建测试节点 create /zk-test Hello
-        zooKeeper.setData("/zk-test", "World".getBytes(), -1, (rc, path, ctx, stat) -> {
-            if (rc == 0) {
-                System.out.println(stat.getCzxid() + " " +
-                        stat.getMzxid() + " " +
-                        stat.getVersion());
-            }
-        }, null);
+        // 创建测试节点 create /fruit apple
+        zooKeeper.setData("/fruit", "banana".getBytes(), -1,
+                (rc, path, ctx, stat) -> {
+                    if (KeeperException.Code.OK.intValue() == rc) {
+                        System.out.println(stat);
+                    }
+                }, null);
 
 
         // 阻塞，不要让程序结束，因为要监听事件通知。
