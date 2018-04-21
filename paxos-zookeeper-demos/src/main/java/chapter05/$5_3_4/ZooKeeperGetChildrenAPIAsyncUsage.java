@@ -29,7 +29,7 @@ public class ZooKeeperGetChildrenAPIAsyncUsage {
                         } else if (event.getType() == Watcher.Event.EventType.NodeChildrenChanged) {
                             try {
                                 // 重新获取子节点
-                                System.out.println("ReGet Child: " + zooKeeper.getChildren(event.getPath(), true));
+                                System.out.println("重新获取子节点列表 " + zooKeeper.getChildren(event.getPath(), true));
                             } catch (Exception e) {
                             }
                         }
@@ -40,15 +40,15 @@ public class ZooKeeperGetChildrenAPIAsyncUsage {
         connectedSemaphore.await();
 
         /*
-        * 在服务器创建测试节点 create /zk-test Hello
-        * 程序运行中创建子节点
-        * create /zk-test/c1 Hello
-        * create /zk-test/c2 Hello
-        * 观察子节点变化通知
+        * 创建测试节点 create /fruit fruit
+        * 程序运行过程中创建子节点（注意：临时节点不可以创建子节点）
+        * create /fruit/apple apple
+        * create /fruit/banana banana
+        * 观察子节点变更通知
         * */
-        zooKeeper.getChildren("/zk-test", true,
-                ((rc, path, ctx, children, stat) -> System.out.println("Get Children znode result: [response code: " + rc + ", param path: " + path
-                        + ", ctx: " + ctx + ", children list: " + children + ", stat: " + stat)),
+        zooKeeper.getChildren("/fruit", true,
+                ((rc, path, ctx, children, stat) -> System.out.println("第一次获取子节点列表 [rc: " + rc + ", path: " + path
+                        + ", ctx: " + ctx + ", children: " + children + ", stat: " + stat)),
                 null);
 
         // 阻塞，不要让程序结束，因为要监听事件通知。
