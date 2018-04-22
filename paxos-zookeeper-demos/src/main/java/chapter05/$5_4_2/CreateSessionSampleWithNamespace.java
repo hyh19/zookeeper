@@ -6,7 +6,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
 /**
- * Created by yuhuihuang on 17/04/2018.
+ * 5.4.2 使用 Curator 创建含隔离命名空间的会话
  */
 public class CreateSessionSampleWithNamespace {
     public static void main(String[] args) throws Exception {
