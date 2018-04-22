@@ -10,9 +10,7 @@ import org.apache.zookeeper.data.Stat;
  */
 public class GetDataSample {
 
-    static String path = "/zk-book/c1";
-
-    static CuratorFramework client = CuratorFrameworkFactory.builder()
+    private static final CuratorFramework client = CuratorFrameworkFactory.builder()
             .connectString("localhost:2181")
             .sessionTimeoutMs(5000)
             .retryPolicy(new ExponentialBackoffRetry(1000, 3))
@@ -20,14 +18,13 @@ public class GetDataSample {
 
     public static void main(String[] args) throws Exception {
 
-        /**
-         * 创建测试节点
-         * create /zk-book hello
-         * create /zk-book/c1 world
+        /*
+          创建测试节点
+          create /fruit orange
          */
         client.start();
         Stat stat = new Stat();
-        byte[] data = client.getData().storingStatIn(stat).forPath(path);
+        byte[] data = client.getData().storingStatIn(stat).forPath("/fruit");
         System.out.println("data: " + new String(data));
         System.out.println("stat: " + stat);
 
